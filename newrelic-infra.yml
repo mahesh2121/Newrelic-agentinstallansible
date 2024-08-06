@@ -1,0 +1,8 @@
+license_key: 2a59bab328497bfd2f32157d0c49dadbFFFFNRAL
+custom_attributes:
+   environment: production
+   service: login service
+   team: devops-team
+enable_process_metrics: true
+verbose: 1
+
