@@ -31,7 +31,21 @@ Two rules make this safe:
 
 ## The workflow in this repo
 
-`.github/workflows/ci.yml` implements it. The core stages:
+`.github/ci.yml.example` implements it, ready to be moved into
+`.github/workflows/ci.yml` by someone with repo admin rights:
+
+```bash
+mkdir -p .github/workflows
+git mv .github/ci.yml.example .github/workflows/ci.yml
+```
+
+> **Why the odd location?** A GitHub App token without the `workflows` permission
+> cannot create files under `.github/workflows/` — GitHub rejects the push with
+> `refusing to allow a GitHub App to create or update workflow`. Shipping it as a
+> `.example` keeps the pipeline reviewable and runnable-by-hand (`make verify`
+> runs exactly the same commands) without needing that permission.
+
+The core stages:
 
 ```yaml
 - name: YAML lint

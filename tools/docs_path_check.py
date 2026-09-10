@@ -46,6 +46,11 @@ INTENTIONAL = {
     # Created by `ansible-galaxy collection install -r requirements.yml`,
     # git-ignored. Does not exist on a fresh checkout (Day 17).
     "ansible/collections",
+    # Destination paths quoted in Day 19's install instructions. The workflow
+    # ships as .github/ci.yml.example because the GitHub App token cannot create
+    # files under .github/workflows/; a human moves it into place.
+    ".github/workflows",
+    ".github/workflows/ci.yml",
 }
 
 
