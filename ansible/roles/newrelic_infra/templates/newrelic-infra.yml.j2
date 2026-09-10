@@ -1,0 +1,45 @@
+# Managed by Ansible - roles/newrelic_infra/templates/newrelic-infra.yml.j2
+# Editing this file on the host is pointless: the next playbook run overwrites it.
+#
+# JINJA NOTE: this template uses plain block tags, never the dash-stripping
+# form. Ansible's template engine removes the newline around a dash tag, which
+# collapses a rendered mapping onto a single line and produces invalid YAML.
+# labs/local/mock_bridge.sh parses the rendered file with a YAML loader to
+# prove it is valid. (Do not write literal block tags in this comment - Jinja
+# parses comments too.)
+---
+license_key: {{ newrelic_infra_license_key }}
+display_name: {{ newrelic_infra_display_name }}
+verbose: {{ newrelic_infra_verbosity }}
+
+log:
+  file: {{ newrelic_infra_log_file }}
+  level: {{ newrelic_infra_log_level }}
+
+{% if newrelic_infra_endpoints | length > 0 %}
+{# Only render endpoints for EU/FedRamp accounts - defaults are correct for US. #}
+{% for key, value in newrelic_infra_endpoints.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if newrelic_infra_custom_attributes | length > 0 %}
+custom_attributes:
+{% for key, value in newrelic_infra_custom_attributes.items() %}
+  {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% if newrelic_infra_labels | length > 0 %}
+# labels: is the legacy spelling of custom_attributes. Kept so dashboards that
+# still filter on labels keep working. Remove once the migration is complete.
+labels:
+{% for key, value in newrelic_infra_labels.items() %}
+  {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}
+{% if newrelic_infra_passthrough_environment | length > 0 %}
+# Environment variables the agent is allowed to read and forward as attributes.
+passthrough_environment:
+{% for var in newrelic_infra_passthrough_environment %}
+  - {{ var }}
+{% endfor %}
+{% endif %}

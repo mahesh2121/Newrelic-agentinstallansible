@@ -1,0 +1,23 @@
+---
+# Read-only proof that monitoring is actually working.
+#   ansible-playbook playbooks/verify.yml --limit servers
+- name: Verify agents on every host
+  hosts: newrelic_infra
+  gather_facts: true
+  tags: verify
+  roles:
+    - role: verify_agents
+      tags: verify_agents
+
+- name: Summarise fleet verification
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tags: verify
+  tasks:
+    - name: Build fleet summary
+      ansible.builtin.debug:
+        msg: >-
+          verified hosts={{ groups['newrelic_infra'] | default([]) | length }}
+          hosts={{ groups['newrelic_infra'] | default([]) | join(', ') }}
+      changed_when: false

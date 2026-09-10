@@ -1,0 +1,92 @@
+{
+  "version": 4,
+  "terraform_version": "1.9.0",
+  "serial": 42,
+  "lineage": "b7e2f1a0-1234-5678-9abc-def012345678",
+  "outputs": {
+    "ansible_inventory_json": {
+      "value": {
+        "all": {
+          "children": {
+            "servers": {
+              "hosts": {
+                "newrelic-fleet-dev-app-1a2b3c": {
+                  "ansible_host": "10.0.11.41",
+                  "ansible_user": "ubuntu",
+                  "instance_id": "i-0abc11a2b3c",
+                  "availability_zone": "ap-south-1a",
+                  "instance_type": "t3.micro",
+                  "private_ip": "10.0.11.41",
+                  "public_ip": "",
+                  "aws_region": "ap-south-1",
+                  "env_name": "dev",
+                  "project": "newrelic-fleet"
+                },
+                "newrelic-fleet-dev-app-4d5e6f": {
+                  "ansible_host": "10.0.12.88",
+                  "ansible_user": "ubuntu",
+                  "instance_id": "i-0def44d5e6f",
+                  "availability_zone": "ap-south-1b",
+                  "instance_type": "t3.micro",
+                  "private_ip": "10.0.12.88",
+                  "public_ip": "",
+                  "aws_region": "ap-south-1",
+                  "env_name": "dev",
+                  "project": "newrelic-fleet"
+                },
+                "newrelic-fleet-dev-app-7g8h9i": {
+                  "ansible_host": "10.0.11.97",
+                  "ansible_user": "ubuntu",
+                  "instance_id": "i-0ghi77g8h9i",
+                  "availability_zone": "ap-south-1a",
+                  "instance_type": "t3.micro",
+                  "private_ip": "10.0.11.97",
+                  "public_ip": "",
+                  "aws_region": "ap-south-1",
+                  "env_name": "dev",
+                  "project": "newrelic-fleet"
+                }
+              },
+              "vars": {
+                "ansible_ssh_common_args": "-o StrictHostKeyChecking=accept-new"
+              }
+            },
+            "newrelic_infra": {
+              "children": {
+                "servers": null
+              }
+            }
+          }
+        }
+      },
+      "type": [
+        "object",
+        {
+          "all": [
+            "object",
+            {
+              "children": "dynamic"
+            }
+          ]
+        }
+      ]
+    },
+    "vpc_id": {
+      "value": "vpc-0a1b2c3d4e5f60789",
+      "type": "string"
+    },
+    "autoscaling_group_name": {
+      "value": "newrelic-fleet-dev-asg-20260910120000000000000001",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "app",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# Managed by Ansible - role: hardening
+# Drop-in validated with `sshd -t` before it is written to disk.
+PermitRootLogin {{ hardening_ssh_permit_root_login }}
+PasswordAuthentication {{ 'yes' if hardening_ssh_password_authentication | bool else 'no' }}
+MaxAuthTries {{ hardening_ssh_max_auth_tries }}
+ClientAliveInterval {{ hardening_ssh_client_alive_interval }}
+X11Forwarding no
+AllowAgentForwarding no

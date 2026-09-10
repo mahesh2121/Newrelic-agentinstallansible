@@ -1,0 +1,25 @@
+# Applies only to hosts in the [servers] group (the real cloud hosts).
+---
+ansible_user: "{{ bootstrap_ssh_user }}"
+ansible_ssh_common_args: "-o StrictHostKeyChecking=accept-new"
+
+# Real hosts get the full stack; the local lab skips the packages that need root.
+common_base_packages:
+  - curl
+  - wget
+  - jq
+  - unzip
+  - ca-certificates
+  - gnupg
+  - net-tools
+  - ntp
+
+newrelic_infra_labels:
+  env: "{{ env_name }}"
+  region: "{{ aws_region }}"
+  managed_by: ansible
+  project: "{{ project }}"
+
+newrelic_infra_passthrough_environment:
+  - NRIA_CUSTOM_ATTRIBUTES
+  - AWS_REGION

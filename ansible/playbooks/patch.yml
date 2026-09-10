@@ -1,0 +1,47 @@
+---
+# Security patching with a rolling reboot. This is the playbook you schedule.
+#
+#   ansible-playbook playbooks/patch.yml --limit servers --forks 5
+#
+# `serial` is what makes it safe: only `serial` hosts are patched at a time, so
+# you never take the whole fleet offline. Day 23 covers the maths.
+- name: Patch managed hosts in batches
+  hosts: servers
+  gather_facts: true
+  serial: 2
+  tags: patch
+  tasks:
+    - name: Upgrade security packages (Debian)
+      ansible.builtin.apt:
+        upgrade: safe
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_facts['pkg_mgr'] == 'apt'
+
+    # `update_only` + `state: present` upgrades what is already installed without
+    # pulling in new packages - and unlike `state: latest` it satisfies
+    # ansible-lint's package-latest idempotency rule.
+    - name: Upgrade security packages (RedHat)
+      ansible.builtin.dnf:
+        name: "*"
+        update_only: true
+        security: true
+        state: present
+      when: ansible_facts['pkg_mgr'] in ['dnf', 'yum']
+
+    - name: Check whether a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: patch_reboot_required
+
+    - name: Reboot patched host and wait for it to return
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+        post_reboot_delay: 20
+      when: patch_reboot_required['stat']['exists']
+
+    - name: Ensure New Relic agent came back after reboot
+      ansible.builtin.service:
+        name: newrelic-infra
+        state: started
+      failed_when: false

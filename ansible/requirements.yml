@@ -1,0 +1,32 @@
+# Optional dependencies. This repository runs WITHOUT them - everything in
+# ansible/ uses ansible.builtin only, which is what makes the labs portable.
+#
+# Install when you want the nicer modules (see Day 17):
+#   cd ansible
+#   ansible-galaxy collection install -r requirements.yml -p ./collections
+#   ansible-galaxy role install -r requirements.yml -p ./roles
+#
+# After installing you can also re-enable in ansible.cfg:
+#   stdout_callback = yaml          (community.general)
+#   callback_enabled = profile_tasks (ansible.posix)
+---
+collections:
+  # authorized_key, firewalld, sysctl, mount, ...
+  - name: ansible.posix
+    version: ">=1.5.0"
+
+  # ufw, timezone, and the `yaml` stdout callback
+  - name: community.general
+    version: ">=8.0.0"
+
+  # ec2_instance / ec2_instances inventory plugin (Day 15, pattern 3)
+  - name: amazon.aws
+    version: ">=7.0.0"
+
+  # The official New Relic role - compare with roles/newrelic_infra (Day 18)
+  - name: newrelic.newrelic_install
+    version: ">=1.0.0"
+
+roles: []
+# - name: geerlingguy.ntp
+#   version: "2.4.0"

@@ -1,0 +1,9 @@
+# {{ item.name }} - rendered by labs/local/lab.yml
+server {
+    name {{ item.name }};
+    listen {{ item.port }};
+    labels {
+        env = "{{ env_name | default('lab') }}",
+        role = "web"
+    }
+}

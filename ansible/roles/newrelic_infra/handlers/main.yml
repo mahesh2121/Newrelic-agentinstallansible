@@ -1,0 +1,12 @@
+---
+- name: Restart newrelic-infra
+  ansible.builtin.service:
+    name: "{{ newrelic_infra_service_name }}"
+    state: restarted
+  # Two guards, both learned the hard way:
+  #   * install_packages=false means there is no systemd unit to restart
+  #     (this is how the local lab renders config without an agent)
+  #   * restart_on_config_change lets you roll config out without a restart
+  when:
+    - newrelic_infra_restart_on_config_change | bool
+    - newrelic_infra_install_packages | bool

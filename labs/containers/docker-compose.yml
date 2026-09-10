@@ -1,0 +1,65 @@
+# Local multi-host lab: three SSH-able "servers" and no cloud account.
+#
+#   cd labs/containers
+#   docker compose up -d
+#   cd ../../ansible
+#   ansible -i ../labs/containers/inventory.yml all -m ping
+#   ansible-playbook -i ../labs/containers/inventory.yml playbooks/configure.yml
+#   docker compose down -v
+#
+# Requires: docker, and `ssh-keygen` for the mounted key below.
+#
+#   ssh-keygen -t ed25519 -N '' -f ./id_ed25519
+#
+services:
+  web-01:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: lab-web-01
+    hostname: web-01
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - USER_NAME=ubuntu
+      - DOCKER_MODS=linuxserver/mods:openssh-server-ssh-keygen
+      - PUBLIC_KEY_FILE=/tmp/.ssh/id_ed25519.pub
+      - SUDO_ACCESS=true
+      - PASSWORD_ACCESS=false
+    volumes:
+      - ./id_ed25519.pub:/tmp/.ssh/id_ed25519.pub:ro
+    ports:
+      - "2221:2222"
+    restart: unless-stopped
+
+  web-02:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: lab-web-02
+    hostname: web-02
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - USER_NAME=ubuntu
+      - PUBLIC_KEY_FILE=/tmp/.ssh/id_ed25519.pub
+      - SUDO_ACCESS=true
+      - PASSWORD_ACCESS=false
+    volumes:
+      - ./id_ed25519.pub:/tmp/.ssh/id_ed25519.pub:ro
+    ports:
+      - "2222:2222"
+    restart: unless-stopped
+
+  db-01:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: lab-db-01
+    hostname: db-01
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - USER_NAME=ubuntu
+      - PUBLIC_KEY_FILE=/tmp/.ssh/id_ed25519.pub
+      - SUDO_ACCESS=true
+      - PASSWORD_ACCESS=false
+    volumes:
+      - ./id_ed25519.pub:/tmp/.ssh/id_ed25519.pub:ro
+    ports:
+      - "2223:2222"
+    restart: unless-stopped

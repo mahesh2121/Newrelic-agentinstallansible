@@ -1,0 +1,31 @@
+---
+# The heart of this repository: New Relic agents on every host.
+#
+#   ansible-playbook playbooks/newrelic.yml --limit servers --ask-vault-pass
+#   ansible-playbook playbooks/newrelic.yml --limit lab                # dry lab
+#   ansible-playbook playbooks/newrelic.yml --limit servers -t nr_config --diff
+- name: Install New Relic infrastructure agent
+  hosts: newrelic_infra
+  gather_facts: true
+  tags: newrelic
+  roles:
+    - role: newrelic_infra
+      tags: newrelic_infra
+
+- name: Install on-host integrations
+  hosts: newrelic_infra
+  gather_facts: true
+  tags: newrelic
+  roles:
+    - role: newrelic_integrations
+      tags: newrelic_integrations
+
+- name: Configure APM language agents
+  hosts: newrelic_apm
+  gather_facts: true
+  tags:
+    - newrelic
+    - apm
+  roles:
+    - role: newrelic_apm
+      tags: newrelic_apm

@@ -1,0 +1,44 @@
+---
+- name: Install unattended-upgrades
+  ansible.builtin.package:
+    name: "{{ hardening_unattended_package }}"
+    state: present
+  when: hardening_manage_unattended_upgrades | bool
+
+- name: Install fail2ban
+  ansible.builtin.package:
+    name: "{{ hardening_fail2ban_package }}"
+    state: present
+  when: hardening_manage_fail2ban | bool
+
+- name: Deploy fail2ban jail
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: "{{ hardening_fail2ban_jail_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+  when: hardening_manage_fail2ban | bool
+
+- name: Deploy SSH hardening drop-in
+  ansible.builtin.template:
+    src: sshd_hardening.conf.j2
+    dest: "{{ hardening_sshd_drop_in }}"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: sshd -t -f %s
+  notify: Reload sshd
+  when: hardening_manage_sshd | bool
+
+- name: Write hardening marker
+  ansible.builtin.copy:
+    content: |
+      managed_by: ansible
+      role: hardening
+      permit_root_login: {{ hardening_ssh_permit_root_login }}
+      password_authentication: {{ hardening_ssh_password_authentication }}
+    dest: "{{ hardening_marker_dir }}/hardening.yml"
+    mode: "0644"
+  when: hardening_enabled | bool

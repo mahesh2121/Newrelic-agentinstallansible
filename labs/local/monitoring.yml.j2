@@ -1,0 +1,9 @@
+# Rendered by labs/local/lab.yml - same shape as the real agent config
+# (roles/newrelic_infra/templates/newrelic-infra.yml.j2)
+license_key: LAB-PLACEHOLDER-KEY
+display_name: {{ inventory_hostname }}
+verbose: 1
+custom_attributes:
+  env: "{{ env_name | default('lab') }}"
+  managed_by: "ansible"
+  lab: "true"

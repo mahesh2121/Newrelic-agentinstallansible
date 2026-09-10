@@ -1,0 +1,40 @@
+# Variables that apply to every host in every group.
+# Precedence (lowest -> highest) is covered on Day 4:
+#   role defaults < inventory group_vars/all < group_vars/<group> < host_vars
+#   < play vars < -e extra vars
+---
+# ------------------------------------------------------------------ environment
+env_name: dev
+aws_region: ap-south-1
+project: newrelic-fleet
+owner: platform-team
+cost_center: sre-001
+
+# ------------------------------------------------------------- New Relic account
+# NEVER commit a real license key. Inject it with:
+#   ansible-vault create inventory/group_vars/vault.yml      (Day 4)
+#   -e @vault.yml / --ask-vault-pass
+newrelic_account_region: US            # US | EU | STAGING
+newrelic_infra_agent_version: present  # pin a version in prod, e.g. "1.60.0"
+newrelic_verbosity: 0                  # 0..3
+
+newrelic_license_key: "{{ vault_newrelic_license_key | default('') }}"
+
+# ------------------------------------------------------------------- OS defaults
+common_ntp_enabled: true
+common_timezone: UTC
+common_base_packages:
+  - curl
+  - wget
+  - jq
+  - tar
+  - unzip
+  - ca-certificates
+  - gnupg
+
+# --------------------------------------------------------------- SSH / bootstrap
+bootstrap_ssh_user: ubuntu
+bootstrap_wait_timeout: 600
+deploy_user: deploy
+deploy_user_groups:
+  - sudo

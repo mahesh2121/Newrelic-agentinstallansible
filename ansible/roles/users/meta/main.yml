@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: users
+  namespace: newrelic_fleet
+  author: platform-team
+  description: Creates the deploy user, installs SSH keys and manages sudoers.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - users
+    - ssh
+    - security
+
+dependencies: []

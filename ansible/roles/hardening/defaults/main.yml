@@ -1,0 +1,17 @@
+---
+hardening_enabled: true
+hardening_manage_sshd: true
+hardening_sshd_drop_in: /etc/ssh/sshd_config.d/99-ansible-hardening.conf
+hardening_ssh_permit_root_login: "no"
+hardening_ssh_password_authentication: false
+hardening_ssh_max_auth_tries: 3
+hardening_ssh_client_alive_interval: 300
+
+hardening_manage_unattended_upgrades: false
+hardening_unattended_package: unattended-upgrades
+
+hardening_manage_fail2ban: false
+hardening_fail2ban_package: fail2ban
+hardening_fail2ban_jail_path: /etc/fail2ban/jail.local
+
+hardening_marker_dir: /etc/ansible-managed

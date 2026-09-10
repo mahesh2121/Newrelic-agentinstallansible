@@ -1,0 +1,30 @@
+# Inventory for labs/containers/docker-compose.yml
+#
+#   ssh-keygen -t ed25519 -N '' -f labs/containers/id_ed25519
+#   docker compose -f labs/containers/docker-compose.yml up -d
+#   ansible -i labs/containers/inventory.yml all -m ping
+all:
+  vars:
+    ansible_user: ubuntu
+    ansible_port: 2222
+    ansible_host: localhost
+    ansible_ssh_private_key_file: ../labs/containers/id_ed25519
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+  children:
+    web:
+      hosts:
+        web-01:
+          ansible_port: 2221
+        web-02:
+          ansible_port: 2222
+    db:
+      hosts:
+        db-01:
+          ansible_port: 2223
+    newrelic_infra:
+      children:
+        web:
+        db:
+    newrelic_apm:
+      children:
+        web:

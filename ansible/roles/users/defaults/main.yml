@@ -1,0 +1,17 @@
+---
+users_create_deploy_user: true
+users_deploy_user: deploy
+users_deploy_user_shell: /bin/bash
+users_deploy_user_groups:
+  - sudo
+users_deploy_user_home: /home/deploy
+
+# Public keys are NOT secrets - commit them. Private keys never go here.
+users_ssh_authorized_keys: []
+
+users_manage_sudoers: true
+users_sudoers_path: /etc/sudoers.d/90-ansible-managed
+users_passwordless_sudo: true
+
+# Local lab writes into the user's home instead of /etc and /home.
+users_sudoers_mode: "0440"

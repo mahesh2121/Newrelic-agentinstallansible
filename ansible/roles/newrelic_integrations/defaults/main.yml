@@ -1,0 +1,23 @@
+---
+# On-host integrations (the nri-* family). Each integration is a pair of files:
+#   <name>.yml    the instance definition (what to scrape, credentials, labels)
+#   <name>-config.yml  the integration's own settings
+# The infrastructure agent discovers both directories and runs them on its
+# polling interval, so no extra service is needed.
+newrelic_integrations_enabled: true
+newrelic_integrations_restart_agent: true
+newrelic_integrations_dir: /etc/newrelic-infra/integrations.d
+newrelic_integrations_config_dir: /etc/newrelic-infra
+
+# Which integrations to configure. Each entry gets a definition file rendered
+# from templates/<name>.yml.j2 if it exists, otherwise the built-in generic one.
+newrelic_integrations_list:
+  - nri-flex-example
+
+newrelic_integrations_interval: 30s
+newrelic_integrations_labels:
+  env: "{{ env_name | default('dev') }}"
+
+# Example payload for the flex integration - override in group_vars per host.
+newrelic_integrations_flex_command: /usr/bin/uptime
+newrelic_integrations_flex_event_type: FleetUptimeSample

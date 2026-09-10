@@ -1,0 +1,24 @@
+# ansible-lint configuration. Run with:  ansible-lint   (from ansible/ directory)
+profile: production
+
+# Do not try to install requirements.yml before linting. This repo runs on a bare
+# ansible-core install (Day 17) and CI may have no network access to Galaxy.
+# Set to false locally if you have installed ansible/requirements.yml.
+offline: true
+
+exclude_paths:
+  - .facts/
+  - collections/
+  - ../docs/
+  - ../labs/local/.facts/
+
+# Rules we consciously do not enforce in this teaching repo.
+# Every skip is justified in docs/level-3-master/day24-security-compliance.md
+skip_list:
+  - fqcn[deep]          # nested action plugins occasionally need short names
+  - name[play]          # play names are descriptive sentences here
+  - var-naming[no-role-prefix]  # shared vars (newrelic_*) are intentionally global
+
+warn_list:
+  - experimental
+  - no-log-password

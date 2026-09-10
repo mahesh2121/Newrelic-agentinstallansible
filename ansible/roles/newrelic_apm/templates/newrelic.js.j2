@@ -1,0 +1,16 @@
+// Managed by Ansible - roles/newrelic_apm/templates/newrelic.js.j2
+'use strict'
+
+exports.config = {
+  app_name: ['{{ newrelic_apm_node_app_name }}'],
+  license_key: '{{ newrelic_apm_license_key }}',
+  distributed_tracing: { enabled: true },
+  logging: {
+    level: 'info',
+    filepath: '/var/log/newrelic/newrelic-node-agent.log'
+  },
+  allow_all_headers: true,
+  attributes: {
+    exclude: ['request.headers.cookie', 'request.headers.authorization']
+  }
+}

@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------- Terraform
+# State files contain plaintext secrets. Never commit them.
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# ...EXCEPT the lab fixture, which is a committed test input containing no real
+# data. Without this negation the Day 15 bridge lab cannot run at all.
+!labs/local/sample.tfstate.json
+
+# Real variable values (commit the .example files instead)
+terraform.tfvars
+terraform.tfvars.json
+*.auto.tfvars
+
+# Provider binaries and downloaded modules - regenerate with `terraform init`
+.terraform/
+.terraform.d/
+*.tfplan
+tfplan
+
+# Keep the dependency lock (it pins provider hashes)
+!.terraform.lock.hcl
+
+# ---------------------------------------------------------------- Ansible
+# Generated from Terraform output - see terraform/scripts/tf_to_inventory.py
+ansible/inventory/generated/
+
+# Encrypted secrets stay OUT of git unless your team commits them deliberately
+ansible/inventory/group_vars/vault.yml
+
+# Cached facts contain host details
+.facts/
+ansible/.facts/
+labs/local/.facts/
+
+# Vendored collections - install with ansible-galaxy install -r requirements.yml
+ansible/collections/
+
+# Retry files (disabled in ansible.cfg, belt and braces)
+*.retry
+
+# ---------------------------------------------------------------- Local labs
+labs/local/work/
+/tmp-*
+overrides.yml
+
+# ---------------------------------------------------------------- Tooling
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# ---------------------------------------------------------------- Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store

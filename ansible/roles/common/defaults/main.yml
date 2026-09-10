@@ -1,0 +1,25 @@
+# Role defaults = lowest precedence in Ansible. Override anything here from
+# group_vars, host_vars or -e. Never put secrets in defaults.
+---
+common_manage_timezone: true
+common_manage_motd: true
+common_manage_ntp: true
+
+common_timezone: UTC
+common_ntp_service: chronyd            # chronyd | ntpd | systemd-timesyncd
+
+common_base_packages:
+  - curl
+  - wget
+  - jq
+  - unzip
+  - ca-certificates
+  - gnupg
+
+common_motd_path: /etc/motd
+common_motd_template: motd.j2
+
+# Directory where this repo leaves evidence of what it did. Day 25 uses it to
+# prove a host is still configured the way Ansible left it.
+common_marker_dir: /etc/ansible-managed
+common_marker_enabled: true
