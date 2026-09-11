@@ -20,6 +20,7 @@ This repository is two things at once:
 | See the Terraform→Ansible bridge | [`docs/level-2-integration/day15-terraform-ansible-integration.md`](docs/level-2-integration/day15-terraform-ansible-integration.md) |
 | See what was actually verified | [`docs/VERIFICATION.md`](docs/VERIFICATION.md) |
 | Test yourself | [`docs/CHECKPOINTS.md`](docs/CHECKPOINTS.md) |
+| Learn to *operate* it in AWS (Days 31–37) | [`docs/aws-cloudops-level3/README.md`](docs/aws-cloudops-level3/README.md) |
 
 ## Quick start (no cloud account needed)
 
@@ -82,6 +83,7 @@ labs/
 └── containers/    docker-compose multi-host lab
 
 docs/              Day 0-30 curriculum, checkpoints, verification report
+└── aws-cloudops-level3/   Day 31-37: operating the platform in AWS
 tools/             hcl_parse_check.py, docs_path_check.py
 .checkov.yaml      security skips, each with a written justification
 ```
