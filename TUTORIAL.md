@@ -13,6 +13,7 @@ files here, and every lab command is one you can run.
 | **Level 1 — Foundations** | 1–10 | You can write playbooks and roles, and plan/apply Terraform by hand |
 | **Level 2 — Integration** | 11–20 | You can provision with Terraform and configure with Ansible as one pipeline |
 | **Level 3 — Master** | 21–30 | You run it at fleet scale: secure, tested, drift-free, observable, self-healing |
+| **Level 3+ — AWS CloudOps** *(optional)* | 31–37 | You *operate* it in AWS: access, scaling, recovery, correlation, cost, incidents |
 
 **Time budget:** 1–2 hours per day. Days 10, 20 and 30 are capstones — budget 3–4 hours.
 
@@ -85,6 +86,24 @@ The bridge between them is `terraform/environments/dev/outputs.tf` — Day 15.
 | [28](docs/level-3-master/day28-cost-scale-and-module-versioning.md) | Cost & module versioning | Semver modules, plan-noise reduction, tags | versioned module reference |
 | [29](docs/level-3-master/day29-troubleshooting-masterclass.md) | Troubleshooting | Diagnose 15 real failures | reproduce and fix each |
 | [30](docs/level-3-master/day30-master-capstone.md) | Master capstone | Build the whole platform solo | capstone rubric |
+
+### Level 3+ — AWS CloudOps (Days 31–37, optional)
+
+Level 3 ends at "you can build it". This separate track covers the part with no
+certification: running the platform in AWS. Each day surfaces a real finding
+about *this* repository and asks you to write the check that would have caught it.
+
+| Day | Title | The one thing |
+| --- | --- | --- |
+| [31](docs/aws-cloudops-level3/day31-aws-identity-and-access.md) | AWS identity and access | Three identities; only the instance role is in this repo |
+| [32](docs/aws-cloudops-level3/day32-ec2-and-asg-operations.md) | EC2 and ASG operations | A launch template edit changes nothing until you refresh |
+| [33](docs/aws-cloudops-level3/day33-state-storage-backup-and-recovery.md) | State, backup and recovery | Losing the state loses control, not infrastructure |
+| [34](docs/aws-cloudops-level3/day34-cloudwatch-newrelic-correlation.md) | CloudWatch ↔ New Relic | Four hops from a Terraform variable to an NRQL `WHERE` |
+| [35](docs/aws-cloudops-level3/day35-patching-maintenance-and-change-control.md) | Patching and change control | `failed_when: false` is a decision that needs an owner |
+| [36](docs/aws-cloudops-level3/day36-cost-budgets-and-governance.md) | Cost, budgets, governance | Tags are not cost allocation until you activate them |
+| [37](docs/aws-cloudops-level3/day37-compliance-incidents-and-cloudops-capstone.md) | Compliance and incidents | A global scanner skip hides more than you meant |
+
+Start at [`docs/aws-cloudops-level3/README.md`](docs/aws-cloudops-level3/README.md).
 
 ## Running the labs
 
