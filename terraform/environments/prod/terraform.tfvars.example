@@ -1,0 +1,16 @@
+# Production differs from dev in values only: multi-AZ NAT, bigger instances,
+# monitoring always on, no 0.0.0.0/0 anywhere.
+aws_region  = "ap-south-1"
+project     = "newrelic-fleet"
+environment = "prod"
+
+vpc_cidr           = "10.10.0.0/16"
+availability_zones = ["ap-south-1a", "ap-south-1b", "ap-south-1c"]
+
+instance_type    = "t3.medium"
+min_size         = 3
+max_size         = 8
+desired_capacity = 3
+
+enable_monitoring_module = true
+newrelic_region          = "US"

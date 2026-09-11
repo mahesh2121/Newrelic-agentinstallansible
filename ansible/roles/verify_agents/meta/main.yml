@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: verify_agents
+  namespace: newrelic_fleet
+  author: platform-team
+  description: Proves the New Relic agent is installed, running and reporting.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - monitoring
+    - newrelic
+    - verification
+
+dependencies: []

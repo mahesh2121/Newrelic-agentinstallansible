@@ -1,0 +1,24 @@
+---
+newrelic_apm_enabled: true
+newrelic_apm_license_key: "{{ newrelic_license_key | default('') }}"
+newrelic_apm_app_name: "{{ project | default('app') }}-{{ env_name | default('dev') }}"
+
+# Which language agents to configure on this host.
+newrelic_apm_languages:
+  - python
+
+newrelic_apm_python_config_dir: /etc/newrelic
+newrelic_apm_python_config_path: /etc/newrelic/newrelic.ini
+newrelic_apm_python_log_dir: /var/log/newrelic
+newrelic_apm_python_log_level: info
+newrelic_apm_python_distributed_tracing: true
+newrelic_apm_python_high_security: false
+
+newrelic_apm_node_config_dir: /etc/newrelic
+newrelic_apm_node_config_path: /etc/newrelic/newrelic.js
+newrelic_apm_node_app_name: "{{ newrelic_apm_app_name }}"
+
+# Env-file approach: many teams prefer NEW_RELIC_* env vars over config files.
+newrelic_apm_write_env_file: true
+newrelic_apm_env_file_path: /etc/newrelic/newrelic.env
+newrelic_apm_env_file_mode: "0640"

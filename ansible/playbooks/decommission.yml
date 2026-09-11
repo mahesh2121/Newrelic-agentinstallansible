@@ -1,0 +1,48 @@
+---
+# Removes the agent cleanly so a retired host stops billing you.
+# The matching Terraform step is `terraform destroy` - Day 12 explains why the
+# Ansible part has to happen first.
+#
+#   ansible-playbook playbooks/decommission.yml --limit 10.0.1.23
+- name: Decommission a host
+  hosts: servers
+  gather_facts: true
+  tags: decommission
+  tasks:
+    - name: Confirm the target is explicit
+      ansible.builtin.assert:
+        that:
+          - ansible_limit is defined or (play_hosts | length == 1)
+        fail_msg: >-
+          Refusing to decommission without --limit. Pass the exact host, e.g.
+          --limit 10.0.1.23
+        quiet: true
+
+    - name: Stop and disable the infrastructure agent
+      ansible.builtin.service:
+        name: newrelic-infra
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    - name: Remove the infrastructure agent package
+      ansible.builtin.package:
+        name: newrelic-infra
+        state: absent
+
+    - name: Remove agent configuration
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/newrelic-infra.yml
+        - /etc/newrelic-infra
+        - /etc/newrelic
+        - /var/db/newrelic-infra
+
+    - name: Leave a tombstone marker
+      ansible.builtin.copy:
+        content: "decommissioned_by: ansible\nhost: {{ inventory_hostname }}\n"
+        dest: /etc/ansible-managed/decommissioned.txt
+        mode: "0644"
+      failed_when: false

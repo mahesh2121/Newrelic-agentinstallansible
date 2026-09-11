@@ -1,0 +1,79 @@
+---
+# The lab every Day 1-10 exercise runs against. No cloud, no root, no internet.
+#
+#   cd ansible
+#   ansible-playbook ../labs/local/lab.yml
+#
+# It writes everything under ~/tf-ansible-lab so it is trivially removable:
+#   rm -rf ~/tf-ansible-lab
+- name: Run the local lab
+  hosts: lab
+  gather_facts: true
+  vars:
+    lab_root: "{{ ansible_user_dir }}/tf-ansible-lab"
+    lab_web_servers:
+      - name: web-01
+        port: 8081
+      - name: web-02
+        port: 8082
+    lab_monitoring_enabled: true
+  tasks:
+    - name: Create lab directory tree
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ lab_root }}"
+        - "{{ lab_root }}/etc"
+        - "{{ lab_root }}/sites"
+        - "{{ lab_root }}/monitoring"
+
+    # Day 5: loops + conditionals
+    - name: Render one site configuration per web server
+      ansible.builtin.template:
+        src: site.conf.j2
+        dest: "{{ lab_root }}/sites/{{ item.name }}.conf"
+        mode: "0644"
+      loop: "{{ lab_web_servers }}"
+      loop_control:
+        label: "{{ item.name }}:{{ item.port }}"
+      when: lab_monitoring_enabled | bool
+
+    # Day 6: handlers - the notify only fires because the template changed
+    - name: Render fleet-wide monitoring config
+      ansible.builtin.template:
+        src: monitoring.yml.j2
+        dest: "{{ lab_root }}/monitoring/newrelic-infra.yml"
+        mode: "0600"
+      notify: Show handler fired
+
+    # Day 6: block/rescue/always
+    - name: Simulate a risky step safely
+      block:
+        - name: Attempt an operation that can fail
+          ansible.builtin.command:
+            cmd: test -f {{ lab_root }}/does-not-exist.txt
+          changed_when: false
+
+      rescue:
+        - name: Handle the failure
+          ansible.builtin.debug:
+            msg: "Rescued - the file is missing, continuing without failing the play."
+          changed_when: false
+
+      always:
+        - name: Write the lab completion marker
+          ansible.builtin.copy:
+            content: |
+              lab: complete
+              host: {{ inventory_hostname }}
+              sites: {{ lab_web_servers | map(attribute='name') | join(',') }}
+            dest: "{{ lab_root }}/DONE.txt"
+            mode: "0644"
+
+  handlers:
+    - name: Show handler fired
+      ansible.builtin.debug:
+        msg: "monitoring config changed -> handler ran exactly once"
+      changed_when: false

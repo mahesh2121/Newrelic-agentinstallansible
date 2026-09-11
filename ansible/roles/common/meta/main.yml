@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: common
+  namespace: newrelic_fleet
+  author: platform-team
+  description: Baseline OS configuration (packages, timezone, NTP, MOTD) for the New Relic fleet.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - system
+    - baseline
+    - monitoring
+
+dependencies: []

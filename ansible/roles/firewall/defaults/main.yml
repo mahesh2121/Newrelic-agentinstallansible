@@ -1,0 +1,15 @@
+---
+firewall_enabled: true
+firewall_backend: auto          # auto | ufw | firewalld | none
+firewall_default_incoming: deny
+firewall_default_outgoing: allow
+
+firewall_allowed_tcp_ports:
+  - 22
+
+# New Relic infrastructure agent only makes OUTBOUND connections (443).
+# Nothing needs to be opened inbound for monitoring - a useful fact to know
+# when a security review asks. See Day 18.
+firewall_allowed_tcp_ports_newrelic: []
+
+firewall_allowed_from_cidrs: []

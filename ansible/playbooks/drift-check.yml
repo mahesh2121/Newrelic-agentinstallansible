@@ -1,0 +1,30 @@
+---
+# Drift detector. Runs the real roles in check mode and reports which hosts
+# would change. A host that reports changes has drifted from Git.
+#
+#   ansible-playbook playbooks/drift-check.yml --limit servers
+#   ansible-playbook playbooks/drift-check.yml --limit servers --diff
+#
+# Exit code is 0 either way on purpose - CI decides what "drift" means
+# (see Day 25 for the version that fails the build).
+- name: Detect configuration drift
+  hosts: servers:lab
+  gather_facts: true
+  check_mode: true
+  tags: drift
+  roles:
+    - role: common
+    - role: newrelic_infra
+
+- name: Report drift summary
+  hosts: localhost
+  gather_facts: false
+  become: false
+  tags: drift
+  tasks:
+    - name: Explain the result
+      ansible.builtin.debug:
+        msg: >-
+          Any host above showing changed>0 has drifted from Git.
+          Re-run without check_mode to converge, or investigate first.
+      changed_when: false

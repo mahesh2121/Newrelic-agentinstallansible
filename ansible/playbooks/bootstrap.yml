@@ -1,0 +1,44 @@
+---
+# First contact with a host that Terraform just created.
+#
+# The chicken-and-egg problem: SSH is not up yet, Python may be missing, and the
+# only account you have is the cloud default user from the key pair.
+#
+# Run:  ansible-playbook playbooks/bootstrap.yml --limit servers
+- name: Wait for freshly provisioned hosts
+  hosts: servers
+  gather_facts: false
+  become: false
+  tags: bootstrap
+  tasks:
+    - name: Wait for SSH to accept connections
+      ansible.builtin.wait_for_connection:
+        timeout: "{{ bootstrap_wait_timeout }}"
+        delay: 10
+
+    - name: Test raw connectivity before gathering facts
+      ansible.builtin.raw: echo bootstrap-ok
+      register: bootstrap_raw
+      changed_when: false
+
+    - name: Show raw bootstrap result
+      ansible.builtin.debug:
+        msg: "{{ bootstrap_raw['stdout'] | trim }}"
+      changed_when: false
+
+    - name: Ensure Python 3 is present (required by most Ansible modules)
+      ansible.builtin.raw: >-
+        test -e /usr/bin/python3 ||
+        (apt-get update -qq && apt-get install -y -qq python3) 2>/dev/null ||
+        (dnf install -y -q python3) 2>/dev/null ||
+        (yum install -y -q python3) 2>/dev/null || true
+      register: bootstrap_python
+      changed_when: "'Setting up python3' in bootstrap_python.stdout"
+
+- name: Create the deploy user and baseline access
+  hosts: servers
+  gather_facts: true
+  tags: bootstrap
+  roles:
+    - role: users
+      tags: users

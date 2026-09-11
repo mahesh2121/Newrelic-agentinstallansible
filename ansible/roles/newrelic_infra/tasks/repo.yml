@@ -1,0 +1,50 @@
+---
+# Adds the New Relic package repository for the detected package manager.
+# Deliberately split out of main.yml so it can be skipped (-t '!nr_repo') on
+# air-gapped hosts that get the .deb/.rpm from an internal mirror.
+
+- name: Set Debian repository facts
+  ansible.builtin.set_fact:
+    newrelic_infra_repo_line: >-
+      deb [signed-by={{ newrelic_infra_gpg_key_dest }}]
+      {{ newrelic_infra_repo_base_url }}/linux/apt {{ ansible_facts['distribution_release'] }} main
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- name: Ensure APT keyring directory exists
+  ansible.builtin.file:
+    path: "{{ newrelic_infra_gpg_key_dest | dirname }}"
+    state: directory
+    mode: "0755"
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- name: Download New Relic GPG key (Debian)
+  ansible.builtin.get_url:
+    url: "{{ newrelic_infra_gpg_key_url }}"
+    dest: "{{ newrelic_infra_gpg_key_dest }}"
+    mode: "0644"
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- name: Add New Relic APT repository
+  ansible.builtin.apt_repository:
+    repo: "{{ newrelic_infra_repo_line | trim }}"
+    state: present
+    filename: newrelic-infra
+    update_cache: true
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- name: Import New Relic GPG key (RedHat)
+  ansible.builtin.rpm_key:
+    key: "{{ newrelic_infra_gpg_key_url }}"
+    state: present
+  when: ansible_facts['pkg_mgr'] in ['dnf', 'yum']
+
+- name: Add New Relic YUM repository
+  ansible.builtin.yum_repository:
+    name: newrelic-infra
+    description: New Relic infrastructure agent
+    baseurl: "{{ newrelic_infra_repo_base_url }}/linux/yum/$basearch"
+    gpgcheck: true
+    gpgkey: "{{ newrelic_infra_gpg_key_url }}"
+    enabled: true
+    state: present
+  when: ansible_facts['pkg_mgr'] in ['dnf', 'yum']

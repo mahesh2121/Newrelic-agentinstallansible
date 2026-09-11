@@ -1,0 +1,47 @@
+---
+- name: Create deploy user
+  ansible.builtin.user:
+    name: "{{ users_deploy_user }}"
+    shell: "{{ users_deploy_user_shell }}"
+    home: "{{ users_deploy_user_home }}"
+    groups: "{{ users_deploy_user_groups }}"
+    append: true
+    create_home: true
+    state: present
+  when: users_create_deploy_user | bool
+
+- name: Ensure .ssh directory exists for deploy user
+  ansible.builtin.file:
+    path: "{{ users_deploy_user_home }}/.ssh"
+    state: directory
+    owner: "{{ users_deploy_user }}"
+    group: "{{ users_deploy_user }}"
+    mode: "0700"
+  when:
+    - users_create_deploy_user | bool
+    - users_ssh_authorized_keys | length > 0
+
+# We render the whole file instead of using ansible.posix.authorized_key so this
+# repo runs with zero external collections (see Day 17 for the trade-off).
+# Whole-file rendering is also "exclusive" by nature: drop a key from the
+# variable list and it is gone on the next run.
+- name: Render authorized_keys for deploy user
+  ansible.builtin.template:
+    src: authorized_keys.j2
+    dest: "{{ users_deploy_user_home }}/.ssh/authorized_keys"
+    owner: "{{ users_deploy_user }}"
+    group: "{{ users_deploy_user }}"
+    mode: "0600"
+  when:
+    - users_create_deploy_user | bool
+    - users_ssh_authorized_keys | length > 0
+
+- name: Deploy sudoers drop-in
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: "{{ users_sudoers_path }}"
+    owner: root
+    group: root
+    mode: "{{ users_sudoers_mode }}"
+    validate: visudo -cf %s
+  when: users_manage_sudoers | bool

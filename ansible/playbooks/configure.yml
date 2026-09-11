@@ -1,0 +1,18 @@
+---
+# Baseline OS configuration for every managed host.
+#   ansible-playbook playbooks/configure.yml --limit lab --diff
+#   ansible-playbook playbooks/configure.yml --limit servers -t common
+- name: Configure baseline on all managed hosts
+  hosts: servers:lab
+  gather_facts: true
+  tags: configure
+  roles:
+    - role: common
+      tags: common
+    - role: firewall
+      tags: firewall
+      when: ansible_connection is not defined or ansible_connection != 'local'
+
+  post_tasks:
+    - name: Flush handlers before the play reports success
+      ansible.builtin.meta: flush_handlers

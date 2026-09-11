@@ -1,0 +1,6 @@
+---
+- name: Reload firewall
+  ansible.builtin.command:
+    cmd: ufw reload
+  changed_when: false
+  when: firewall_effective_backend == 'ufw'

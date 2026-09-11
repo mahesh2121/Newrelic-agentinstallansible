@@ -1,0 +1,63 @@
+---
+# Install + configure + verify the New Relic infrastructure agent.
+# Tags let you re-run just one phase:  -t nr_repo / nr_package / nr_config / nr_service
+
+- name: Assert New Relic license key is available
+  ansible.builtin.assert:
+    that:
+      - newrelic_infra_license_key | length > 10
+    fail_msg: >-
+      newrelic_infra_license_key is empty. Put it in an ansible-vault file, e.g.
+      ansible-vault create inventory/group_vars/vault.yml with
+      vault_newrelic_license_key: <key> and run with --ask-vault-pass.
+    quiet: true
+  tags: nr_config
+  when: newrelic_infra_install_packages | bool
+
+- name: Include repository setup
+  ansible.builtin.include_tasks: repo.yml
+  tags: nr_repo
+  when: newrelic_infra_install_packages | bool
+
+- name: Install New Relic infrastructure agent package
+  ansible.builtin.package:
+    name: "{{ newrelic_infra_package_name }}"
+    state: "{{ newrelic_infra_agent_state }}"
+  tags: nr_package
+  when: newrelic_infra_install_packages | bool
+
+- name: Ensure agent directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ newrelic_infra_config_dir }}"
+    - "{{ newrelic_infra_integrations_dir }}"
+    - "{{ newrelic_infra_var_dir }}"
+    - "{{ newrelic_infra_log_dir }}"
+  tags: nr_config
+
+- name: Write newrelic-infra.yml
+  ansible.builtin.template:
+    src: newrelic-infra.yml.j2
+    dest: "{{ newrelic_infra_config_path }}"
+    owner: "{{ newrelic_infra_config_owner }}"
+    group: "{{ newrelic_infra_config_owner }}"
+    mode: "{{ newrelic_infra_config_mode }}"
+    validate: "{{ newrelic_infra_config_validate_cmd | default(omit) }}"
+  notify: Restart newrelic-infra
+  tags: nr_config
+
+- name: Enable and start the infrastructure agent
+  ansible.builtin.service:
+    name: "{{ newrelic_infra_service_name }}"
+    state: "{{ newrelic_infra_service_state }}"
+    enabled: "{{ newrelic_infra_service_enabled }}"
+  tags: nr_service
+  when: newrelic_infra_install_packages | bool
+
+- name: Verify the agent
+  ansible.builtin.include_tasks: verify.yml
+  tags: nr_verify
+  when: newrelic_infra_verify | bool

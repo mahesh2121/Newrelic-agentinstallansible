@@ -1,0 +1,5 @@
+# Managed by Ansible - role: users
+# Full-file render = keys removed from users_ssh_authorized_keys disappear here.
+{% for key in users_ssh_authorized_keys %}
+{{ key }}
+{% endfor %}

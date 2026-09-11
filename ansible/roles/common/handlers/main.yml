@@ -1,0 +1,8 @@
+---
+# Handlers only fire when a task reports "changed" and notify them, and they run
+# once at the end of the play no matter how many times they were notified.
+# Day 6 explains why that matters for agent restarts.
+- name: Refresh motd cache
+  ansible.builtin.debug:
+    msg: "MOTD written to {{ common_motd_path }}"
+  changed_when: false

@@ -1,0 +1,64 @@
+---
+- name: Detect firewall backend
+  ansible.builtin.set_fact:
+    firewall_backend_detected: >-
+      {{ 'ufw' if (ansible_facts['os_family'] == 'Debian')
+         else ('firewalld' if (ansible_facts['os_family'] == 'RedHat') else 'none') }}
+  when: firewall_backend == 'auto'
+
+- name: Set effective backend
+  ansible.builtin.set_fact:
+    firewall_effective_backend: "{{ firewall_backend if firewall_backend != 'auto' else (firewall_backend_detected | default('none')) }}"
+
+- name: Show effective firewall backend
+  ansible.builtin.debug:
+    msg: "firewall backend = {{ firewall_effective_backend }} (enabled={{ firewall_enabled }})"
+  changed_when: false
+
+- name: Install ufw on Debian family
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  when:
+    - firewall_enabled | bool
+    - firewall_effective_backend == 'ufw'
+
+- name: Allow SSH before enabling the firewall
+  ansible.builtin.command:
+    cmd: ufw allow {{ item }}/tcp comment 'ssh'
+  loop: "{{ firewall_allowed_tcp_ports }}"
+  register: firewall_ufw_allow
+  changed_when: "'Adding' in firewall_ufw_allow.stdout"
+  when:
+    - firewall_enabled | bool
+    - firewall_effective_backend == 'ufw'
+
+- name: Allow extra CIDR-scoped ports
+  ansible.builtin.command:
+    cmd: ufw allow from {{ item.1 }} to any port {{ item.0 }} proto tcp
+  loop: "{{ firewall_allowed_tcp_ports | product(firewall_allowed_from_cidrs) | list }}"
+  register: firewall_ufw_cidr
+  changed_when: "'Adding' in firewall_ufw_cidr.stdout"
+  when:
+    - firewall_enabled | bool
+    - firewall_effective_backend == 'ufw'
+    - firewall_allowed_from_cidrs | length > 0
+
+- name: Set ufw defaults
+  ansible.builtin.command:
+    cmd: ufw default {{ firewall_default_incoming }} incoming
+  register: firewall_ufw_default
+  changed_when: false
+  when:
+    - firewall_enabled | bool
+    - firewall_effective_backend == 'ufw'
+
+- name: Enable ufw (non-interactive)
+  ansible.builtin.command:
+    cmd: ufw --force enable
+  register: firewall_ufw_enable
+  changed_when: "'Firewall is active' not in firewall_ufw_enable.stdout"
+  when:
+    - firewall_enabled | bool
+    - firewall_effective_backend == 'ufw'
+  notify: Reload firewall

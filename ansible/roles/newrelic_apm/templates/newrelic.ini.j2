@@ -1,0 +1,14 @@
+# Managed by Ansible - roles/newrelic_apm/templates/newrelic.ini.j2
+# Python agent config. Load it with NEW_RELIC_CONFIG_FILE={{ newrelic_apm_python_config_path }}
+[newrelic]
+license_key = {{ newrelic_apm_license_key }}
+app_name = {{ newrelic_apm_app_name }}
+monitor_mode = true
+log_file = {{ newrelic_apm_python_log_dir }}/newrelic-python-agent.log
+log_level = {{ newrelic_apm_python_log_level }}
+high_security = {{ 'true' if newrelic_apm_python_high_security | bool else 'false' }}
+
+distributed_tracing.enabled = {{ 'true' if newrelic_apm_python_distributed_tracing | bool else 'false' }}
+
+[import-hook:flask]
+enabled = true

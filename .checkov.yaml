@@ -1,0 +1,72 @@
+# Checkov configuration for this repository.
+#
+# Day 24 explains the workflow: fix what is real, and write down WHY for what
+# you deliberately accept. A skip without a comment is just debt.
+#
+# Run with:  checkov -d terraform --config-file .checkov.yaml
+#
+framework: terraform
+compact: true
+directory:
+  - terraform
+
+skip-check:
+  # --- false positives -------------------------------------------------------
+  # CKV_AWS_24: the SSH rule on the app SG uses
+  # `referenced_security_group_id = aws_security_group.bastion.id`, not
+  # 0.0.0.0/0. Checkov cannot resolve cross-resource references here.
+  # Verified by reading modules/security/main.tf -> app_ssh_from_bastion.
+  - CKV_AWS_24
+
+  # CKV2_AWS_5: the app and ALB security groups ARE attached
+  # (launch template `vpc_security_group_ids`, `aws_lb.security_groups`).
+  # Checkov reports them unattached because they are wired through module
+  # inputs. The bastion SG is attached by aws_instance.bastion.
+  - CKV2_AWS_5
+
+  # --- accepted by design ----------------------------------------------------
+  # CKV_AWS_260: this is an internet-facing load balancer. Ports 80/443 must be
+  # open to 0.0.0.0/0. Restrict bastion SSH instead (bastion_allowed_cidrs).
+  - CKV_AWS_260
+
+  # CKV_AWS_2 / CKV_AWS_103 / CKV2_AWS_20: only reported while
+  # alb_certificate_arn is empty (dev mode). Supplying an ACM certificate makes
+  # the module create an HTTPS listener on TLS13-1-2 plus an HTTP->HTTPS 301
+  # redirect, which clears all three. See modules/compute/main.tf listeners.
+  - CKV_AWS_2
+  - CKV_AWS_103
+  - CKV2_AWS_20
+
+  # CKV_AWS_378: ALB -> target group stays HTTP inside the VPC. The app tier has
+  # no TLS terminator; east-west traffic never leaves the private subnet.
+  - CKV_AWS_378
+
+  # CKV2_AWS_28: WAF is opt-in because an AWS-managed web ACL costs money per
+  # environment. Turn it on for prod by attaching a WAFv2 web ACL to
+  # aws_lb.this, then delete this skip.
+  - CKV2_AWS_28
+
+  # CKV_AWS_88: the bastion host is the ONE instance that must have a public IP
+  # - that is its entire purpose (Day 16). It is the only public instance; the
+  # app tier stays in private subnets behind the ALB. Compensating controls:
+  # bastion_allowed_cidrs (no 0.0.0.0/0), key-only SSH, IMDSv2, detailed
+  # monitoring, encrypted root volume, fail2ban via roles/hardening.
+  - CKV_AWS_88
+
+  # --- S3 bucket: configured through separate resources ----------------------
+  # The ALB log bucket IS compliant; checkov's static checks do not resolve the
+  # association to the standalone aws_s3_bucket_* resources in this
+  # configuration. Confirm with a real plan before trusting this list:
+  #   terraform plan -out=tfplan && terraform show -json tfplan | jq '.planned_values'
+  # Verified as of checkov 3.3.17.
+  - CKV2_AWS_6  # aws_s3_bucket_public_access_block.alb_logs sets all four flags
+  - CKV_AWS_21  # aws_s3_bucket_versioning.alb_logs -> status = Enabled
+  - CKV2_AWS_61  # aws_s3_bucket_lifecycle_configuration.alb_logs exists
+
+  # --- S3 bucket: deliberate choices ----------------------------------------
+  - CKV_AWS_145  # SSE-S3 (AES256) on purpose: log data does not need a CMK
+  # CKV_AWS_18: bucket access logging would need a SECOND bucket; access logs
+  # about access logs is not worth the cost here.
+  - CKV_AWS_18
+  - CKV_AWS_144  # cross-region replication is not required for 90-day access logs
+  - CKV2_AWS_62  # event notifications have no consumer for a log archive bucket

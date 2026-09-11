@@ -1,0 +1,13 @@
+---
+newrelic_verify_check_package: true
+newrelic_verify_check_service: true
+newrelic_verify_check_config: true
+newrelic_verify_check_log_age_minutes: 30
+
+# Talking to the New Relic REST API proves data is actually arriving, which is
+# the only check that matters. Needs a User API key + outbound 443.
+newrelic_verify_api_enabled: false
+newrelic_verify_api_key: "{{ vault_newrelic_api_key | default('') }}"
+newrelic_verify_api_base_url: https://api.newrelic.com/v2
+newrelic_verify_api_account_id: "{{ vault_newrelic_account_id | default('') }}"
+newrelic_verify_max_log_age_seconds: 1800

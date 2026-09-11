@@ -1,0 +1,62 @@
+---
+# Baseline role: the first thing that runs on a fresh host.
+# Design rule used all over this repo: every feature behind a boolean flag so
+# the same role works on a real server and in the container/local lab.
+
+- name: Assert supported operating system
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['system'] in ['Linux']
+    fail_msg: >-
+      Unsupported platform: {{ ansible_facts['system'] }}.
+      This role only manages Linux hosts.
+    quiet: true
+
+- name: Create managed-by-ansible marker directory
+  ansible.builtin.file:
+    path: "{{ common_marker_dir }}"
+    state: directory
+    mode: "0755"
+  when: common_marker_enabled | bool
+
+- name: Install baseline packages
+  ansible.builtin.package:
+    name: "{{ common_base_packages }}"
+    state: present
+  when: common_base_packages | length > 0
+
+- name: Set system timezone
+  ansible.builtin.command:
+    cmd: timedatectl set-timezone {{ common_timezone }}
+  changed_when: false
+  when:
+    - common_manage_timezone | bool
+    - ansible_facts['system'] == 'Linux'
+
+- name: Enable and start NTP service
+  ansible.builtin.service:
+    name: "{{ common_ntp_service }}"
+    state: started
+    enabled: true
+  when: common_manage_ntp | bool
+
+- name: Render MOTD banner
+  ansible.builtin.template:
+    src: "{{ common_motd_template }}"
+    dest: "{{ common_motd_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Refresh motd cache
+  when: common_manage_motd | bool
+
+- name: Write configuration marker
+  ansible.builtin.copy:
+    content: |
+      managed_by: ansible
+      role: common
+      last_applied: "{{ ansible_date_time['iso8601'] | default('unknown') }}"
+      inventory_group: "{{ group_names | join(',') }}"
+    dest: "{{ common_marker_dir }}/common.yml"
+    mode: "0644"
+  when: common_marker_enabled | bool

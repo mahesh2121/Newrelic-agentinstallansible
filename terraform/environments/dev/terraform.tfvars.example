@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars and edit. NEVER commit real keys or CIDRs.
+# Suggested: keep terraform.tfvars in .gitignore, commit this example only.
+
+aws_region  = "ap-south-1"
+project     = "newrelic-fleet"
+environment = "dev"
+owner       = "platform-team"
+cost_center = "sre-001"
+
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["ap-south-1a", "ap-south-1b"]
+
+# Your office/VPN egress only. An empty list means nobody can SSH in.
+bastion_allowed_cidrs = ["203.0.113.0/24"]
+
+# Public key material - safe to commit, it is the PUBLIC half.
+ssh_public_key              = "ssh-ed25519 AAAAC3Nza... platform@bastion"
+ansible_ssh_authorized_keys = ["ssh-ed25519 AAAAC3Nza... ci@github-actions"]
+
+instance_type    = "t3.micro"
+min_size         = 1
+max_size         = 3
+desired_capacity = 2
+
+# --- New Relic ---------------------------------------------------------------
+# Prefer the environment variables NEW_RELIC_API_KEY / NEW_RELIC_ACCOUNT_ID.
+enable_monitoring_module = false
+newrelic_account_id      = 0
+newrelic_region          = "US"
+notification_channel_ids = []

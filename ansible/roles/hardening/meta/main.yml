@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: hardening
+  namespace: newrelic_fleet
+  author: platform-team
+  description: CIS-flavoured SSH hardening, automatic updates and fail2ban.
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: EL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - security
+    - hardening
+    - ssh
+
+dependencies: []

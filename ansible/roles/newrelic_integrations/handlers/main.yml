@@ -1,0 +1,10 @@
+---
+- name: Restart newrelic-infra for integrations
+  ansible.builtin.service:
+    name: newrelic-infra
+    state: restarted
+  # Two guards: the agent must actually be package-managed on this host, and the
+  # caller may explicitly opt out (the local lab has no systemd unit).
+  when:
+    - newrelic_integrations_restart_agent | bool
+    - newrelic_infra_install_packages | default(true) | bool

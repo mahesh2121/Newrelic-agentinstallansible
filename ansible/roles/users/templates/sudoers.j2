@@ -1,0 +1,7 @@
+# Managed by Ansible - role: users
+# visudo -cf {{ users_sudoers_path }} validates this file before it lands.
+{% if users_passwordless_sudo | bool %}
+{{ users_deploy_user }} ALL=(ALL) NOPASSWD:ALL
+{% else %}
+{{ users_deploy_user }} ALL=(ALL) ALL
+{% endif %}

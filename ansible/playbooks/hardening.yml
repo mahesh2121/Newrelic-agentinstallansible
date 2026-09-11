@@ -1,0 +1,10 @@
+---
+# Security baseline. Enable one control at a time; each is flag-gated.
+#   ansible-playbook playbooks/hardening.yml --limit servers --diff
+- name: Harden managed hosts
+  hosts: hardening
+  gather_facts: true
+  tags: hardening
+  roles:
+    - role: hardening
+      tags: hardening_role

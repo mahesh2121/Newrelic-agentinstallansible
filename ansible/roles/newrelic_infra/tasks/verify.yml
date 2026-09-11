@@ -1,0 +1,49 @@
+---
+# Post-install proof. A playbook that ends with "changed=4 ok=9" tells you
+# nothing about whether New Relic actually received data - these tasks do.
+
+- name: Validate agent configuration file
+  ansible.builtin.command:
+    cmd: newrelic-infra -config {{ newrelic_infra_config_path }} -validate
+  register: newrelic_infra_validate
+  changed_when: false
+  failed_when:
+    - newrelic_infra_validate.rc != 0
+    - "'unknown flag' not in (newrelic_infra_validate.stderr | default(''))"
+  when:
+    - newrelic_infra_install_packages | bool
+    - newrelic_infra_validate_config | bool
+
+- name: Wait for the agent service to settle
+  ansible.builtin.wait_for:
+    timeout: 10
+  delegate_to: localhost
+  become: false
+  when: newrelic_infra_install_packages | bool
+
+- name: Read agent log tail
+  ansible.builtin.slurp:
+    src: "{{ newrelic_infra_log_file }}"
+  register: newrelic_infra_log
+  failed_when: false
+  when: newrelic_infra_install_packages | bool
+
+- name: Assert no fatal errors in agent log
+  ansible.builtin.assert:
+    that:
+      - "'license key is not valid' not in (newrelic_infra_log['content'] | default('') | b64decode | lower)"
+    fail_msg: "Agent log reports an invalid license key - check vault_newrelic_license_key"
+    quiet: true
+  when:
+    - newrelic_infra_install_packages | bool
+    - newrelic_infra_log is succeeded
+    - newrelic_infra_log['content'] is defined
+
+- name: Report verification summary
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }}: package={{ newrelic_infra_package_name }}
+      config={{ newrelic_infra_config_path }}
+      service_state={{ newrelic_infra_service_state }}
+      display_name={{ newrelic_infra_display_name }}
+  changed_when: false

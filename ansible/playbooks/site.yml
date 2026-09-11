@@ -1,0 +1,17 @@
+---
+# One command, whole lifecycle. This is the file you point CI at.
+#   ansible-playbook playbooks/site.yml --limit dev
+#
+# import_playbook keeps each stage independently runnable and independently
+# taggable - which is exactly what you want when only the agents need touching.
+- name: Bootstrap newly created hosts
+  ansible.builtin.import_playbook: bootstrap.yml
+
+- name: Apply baseline configuration
+  ansible.builtin.import_playbook: configure.yml
+
+- name: Install and configure New Relic agents
+  ansible.builtin.import_playbook: newrelic.yml
+
+- name: Verify the whole fleet
+  ansible.builtin.import_playbook: verify.yml

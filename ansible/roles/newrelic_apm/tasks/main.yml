@@ -1,0 +1,50 @@
+---
+- name: Assert APM license key is available
+  ansible.builtin.assert:
+    that:
+      - newrelic_apm_license_key | length > 10
+    fail_msg: "newrelic_apm_license_key is empty - set it from the vault."
+    quiet: true
+  when: newrelic_apm_enabled | bool
+
+- name: Ensure APM configuration directory exists
+  ansible.builtin.file:
+    path: "{{ newrelic_apm_python_config_dir }}"
+    state: directory
+    mode: "0755"
+  when:
+    - newrelic_apm_enabled | bool
+    - "'python' in newrelic_apm_languages"
+
+- name: Render Python agent configuration
+  ansible.builtin.template:
+    src: newrelic.ini.j2
+    dest: "{{ newrelic_apm_python_config_path }}"
+    owner: root
+    group: root
+    mode: "0600"
+  when:
+    - newrelic_apm_enabled | bool
+    - "'python' in newrelic_apm_languages"
+
+- name: Render Node.js agent configuration
+  ansible.builtin.template:
+    src: newrelic.js.j2
+    dest: "{{ newrelic_apm_node_config_path }}"
+    owner: root
+    group: root
+    mode: "0640"
+  when:
+    - newrelic_apm_enabled | bool
+    - "'node' in newrelic_apm_languages"
+
+- name: Render NEW_RELIC_* environment file
+  ansible.builtin.template:
+    src: newrelic.env.j2
+    dest: "{{ newrelic_apm_env_file_path }}"
+    owner: root
+    group: root
+    mode: "{{ newrelic_apm_env_file_mode }}"
+  when:
+    - newrelic_apm_enabled | bool
+    - newrelic_apm_write_env_file | bool

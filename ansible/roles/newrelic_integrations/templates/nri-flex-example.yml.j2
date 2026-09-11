@@ -1,0 +1,15 @@
+---
+# Managed by Ansible - roles/newrelic_integrations
+# nri-flex runs an arbitrary command and ships the output as a New Relic event.
+# Plain block tags on purpose - see the note in newrelic-infra.yml.j2.
+integrations:
+  - name: fleet-uptime
+    interval: {{ newrelic_integrations_interval }}
+    labels:
+{% for key, value in newrelic_integrations_labels.items() %}
+      {{ key }}: "{{ value }}"
+{% endfor %}
+    commands:
+      - run:
+          command: {{ newrelic_integrations_flex_command }}
+          event_type: {{ newrelic_integrations_flex_event_type }}

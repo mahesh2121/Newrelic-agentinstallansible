@@ -1,0 +1,46 @@
+---
+# --------------------------------------------------------------------- identity
+# License key must come from a vault variable, never from a committed file.
+newrelic_infra_license_key: "{{ newrelic_license_key | default('') }}"
+newrelic_infra_display_name: "{{ inventory_hostname }}"
+
+# --------------------------------------------------------------------- packages
+newrelic_infra_install_packages: true
+newrelic_infra_package_name: newrelic-infra
+newrelic_infra_agent_state: present      # present | absent | a pinned version
+newrelic_infra_repo_base_url: https://download.newrelic.com/infrastructure_agent
+newrelic_infra_gpg_key_url: https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg
+newrelic_infra_gpg_key_dest: /etc/apt/keyrings/newrelic-infra.gpg
+
+# --------------------------------------------------------------------- config
+newrelic_infra_config_dir: /etc
+newrelic_infra_config_path: "{{ newrelic_infra_config_dir }}/newrelic-infra.yml"
+newrelic_infra_config_mode: "0600"        # file contains the license key
+newrelic_infra_config_owner: root
+newrelic_infra_integrations_dir: "{{ newrelic_infra_config_dir }}/newrelic-infra/integrations.d"
+newrelic_infra_var_dir: /var/db/newrelic-infra
+newrelic_infra_log_dir: /var/log/newrelic-infra
+newrelic_infra_log_file: "{{ newrelic_infra_log_dir }}/newrelic-infra.log"
+newrelic_infra_log_level: info            # debug | info | warn | error
+newrelic_infra_verbosity: 0
+
+# Attributes shown in the New Relic UI. custom_attributes is the current API,
+# labels is the legacy spelling - the role renders both so dashboards that still
+# filter on labels keep working during a migration.
+newrelic_infra_custom_attributes: {}
+newrelic_infra_labels: {}
+newrelic_infra_passthrough_environment: []
+
+# Set these only if your account is not on the default US ingest endpoints.
+newrelic_infra_endpoints: {}
+
+# --------------------------------------------------------------------- service
+newrelic_infra_service_name: newrelic-infra
+newrelic_infra_service_enabled: true
+newrelic_infra_service_state: started
+newrelic_infra_restart_on_config_change: true
+
+# --------------------------------------------------------------------- verify
+newrelic_infra_verify: true
+newrelic_infra_validate_config: true
+newrelic_infra_wait_for_service: 60

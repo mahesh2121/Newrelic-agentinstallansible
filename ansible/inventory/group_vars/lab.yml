@@ -1,0 +1,15 @@
+# Local-lab overrides. The lab runs as the current user with connection=local,
+# so anything that would need root on a real server is simulated instead.
+---
+common_timezone: UTC
+common_base_packages: []
+common_ntp_enabled: false
+
+newrelic_infra_install_packages: false   # do not touch the host package manager
+newrelic_infra_service_enabled: false
+newrelic_infra_config_dir: "{{ ansible_user_dir | default('/tmp') }}/lab-newrelic"
+newrelic_infra_var_dir: "{{ ansible_user_dir | default('/tmp') }}/lab-newrelic/var"
+newrelic_infra_log_dir: "{{ ansible_user_dir | default('/tmp') }}/lab-newrelic/log"
+newrelic_infra_labels:
+  env: lab
+  managed_by: ansible

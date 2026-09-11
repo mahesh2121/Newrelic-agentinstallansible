@@ -1,0 +1,71 @@
+---
+# Read-only checks. Safe to run in --check mode, on a schedule, or from CI.
+
+- name: Refresh service facts
+  ansible.builtin.service_facts:
+  when: newrelic_verify_check_service | bool
+
+- name: Assert the agent package is installed
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['packages'][newrelic_infra_package_name] is defined
+    fail_msg: "{{ newrelic_infra_package_name }} is not installed on {{ inventory_hostname }}"
+    quiet: true
+  when:
+    - newrelic_verify_check_package | bool
+    - ansible_facts['packages'] is defined
+
+- name: Assert the agent service is running
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['services'][newrelic_infra_service_name ~ '.service'] is defined
+      - ansible_facts['services'][newrelic_infra_service_name ~ '.service']['state'] == 'running'
+    fail_msg: "{{ newrelic_infra_service_name }} is not running on {{ inventory_hostname }}"
+    quiet: true
+  when:
+    - newrelic_verify_check_service | bool
+    - ansible_facts['services'] is defined
+
+- name: Stat the agent configuration file
+  ansible.builtin.stat:
+    path: "{{ newrelic_infra_config_path }}"
+  register: newrelic_verify_config_stat
+  when: newrelic_verify_check_config | bool
+
+- name: Assert configuration file exists and is not world readable
+  ansible.builtin.assert:
+    that:
+      - newrelic_verify_config_stat['stat']['exists']
+      - newrelic_verify_config_stat['stat']['mode'] in ['0600', '0400', '0640']
+    fail_msg: >-
+      {{ newrelic_infra_config_path }} missing or too permissive
+      (mode {{ newrelic_verify_config_stat['stat']['mode'] | default('n/a') }})
+    quiet: true
+  when:
+    - newrelic_verify_check_config | bool
+    - newrelic_verify_config_stat is not skipped
+
+- name: Query New Relic API for this host
+  ansible.builtin.uri:
+    url: "{{ newrelic_verify_api_base_url }}/applications.json"
+    method: GET
+    headers:
+      X-Api-Key: "{{ newrelic_verify_api_key }}"
+    status_code: 200
+    return_content: true
+  register: newrelic_verify_api_result
+  delegate_to: localhost
+  become: false
+  when:
+    - newrelic_verify_api_enabled | bool
+    - newrelic_verify_api_key | length > 10
+  no_log: true
+
+- name: Report per-host verification result
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }} ->
+      package={{ 'ok' if (ansible_facts['packages'] | default({}))[newrelic_infra_package_name] is defined else 'skipped' }},
+      service={{ 'ok' if (ansible_facts['services'] | default({}))[newrelic_infra_service_name ~ '.service'] is defined else 'skipped' }},
+      config={{ 'ok' if newrelic_verify_config_stat['stat']['exists'] | default(false) else 'skipped' }}
+  changed_when: false

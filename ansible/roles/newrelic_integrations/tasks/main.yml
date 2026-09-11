@@ -1,0 +1,27 @@
+---
+- name: Ensure integrations directory exists
+  ansible.builtin.file:
+    path: "{{ newrelic_integrations_dir }}"
+    state: directory
+    mode: "0755"
+  when: newrelic_integrations_enabled | bool
+
+- name: Deploy integration definitions
+  ansible.builtin.template:
+    src: "{{ item }}.yml.j2"
+    dest: "{{ newrelic_integrations_dir }}/{{ item }}.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ newrelic_integrations_list }}"
+  notify: Restart newrelic-infra for integrations
+  when: newrelic_integrations_enabled | bool
+
+- name: Deploy integration log directory
+  ansible.builtin.file:
+    path: /var/log/nri-flex
+    state: directory
+    mode: "0755"
+  when:
+    - newrelic_integrations_enabled | bool
+    - "'nri-flex-example' in newrelic_integrations_list"
